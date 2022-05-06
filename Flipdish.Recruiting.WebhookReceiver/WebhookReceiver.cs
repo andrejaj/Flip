@@ -86,9 +86,17 @@ namespace Flipdish.Recruiting.WebhookReceiver
                 
                 var emailOrder = emailRenderer.RenderEmailOrder();
 
+                var mailMessageBuilder = new MailMessageBuilder();
+                mailMessageBuilder
+                    .From("")
+                    .To(req.Query["to"])
+                    .Subject($"New Order #{orderId}")
+                    .Body(emailOrder)
+                    .Attachments(emailRenderer._imagesWithNames);
+
                 try
                 {
-                    EmailService.Send("", req.Query["to"], $"New Order #{orderId}", emailOrder, emailRenderer._imagesWithNames);
+                    await EmailService.Send(mailMessageBuilder.Build());
                 }
                 catch(Exception ex)
                 {
