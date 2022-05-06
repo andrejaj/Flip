@@ -29,23 +29,22 @@ namespace Flipdish.Recruiting.WebhookReceiver
                 OrderCreatedWebhook orderCreatedWebhook;
 
                 string test = req.Query["test"];
+                string content = string.Empty;
                 if(req.Method == "GET" && !string.IsNullOrEmpty(test))
                 {
 
                     var templateFilePath = Path.Combine(context.FunctionAppDirectory, "TestWebhooks", test);
-                    var testWebhookJson = new StreamReader(templateFilePath).ReadToEnd();
-
-                    orderCreatedWebhook = JsonConvert.DeserializeObject<OrderCreatedWebhook>(testWebhookJson);
+                    content = new StreamReader(templateFilePath).ReadToEnd();
                 }
                 else if (req.Method == "POST")
                 {
-                    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                    orderCreatedWebhook = JsonConvert.DeserializeObject<OrderCreatedWebhook>(requestBody);
+                    content = await new StreamReader(req.Body).ReadToEndAsync();
                 }
                 else
                 {
                     throw new Exception("No body found or test param.");
                 }
+                orderCreatedWebhook = JsonConvert.DeserializeObject<OrderCreatedWebhook>(content);
                 OrderCreatedEvent orderCreatedEvent = orderCreatedWebhook.Body;
 
                 orderId = orderCreatedEvent.Order.OrderId;
@@ -56,12 +55,7 @@ namespace Flipdish.Recruiting.WebhookReceiver
                     foreach (var storeIdString in storeIdParams)
                     {
                         int storeId = 0;
-                        try 
-                        {
-                            storeId = int.Parse(storeIdString);
-                        }
-                        catch(Exception) {}
-                        
+                        int.TryParse(storeIdString, out storeId);                    
                         storeIds.Add(storeId);
                     }
 
