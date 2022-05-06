@@ -36,8 +36,8 @@ namespace Flipdish.Recruiting.WebhookReceiver
         {
             string preorder_partial = _order.IsPreOrder == true ? GetPreorderPartial() : null;
             string order_status_partial = GetOrderStatusPartial();
-            string order_items_partial = GetOrderItemsPartial();
-            string customer_details_partial = GetCustomerDetailsPartial();
+            string order_items_partial = GetOrderItemsPartialTemplate();
+            string customer_details_partial = GetCustomerDetailsPartialTemplate();
 
             string templateStr = GetLiquidFileAsString("RestaurantOrderDetail.liquid");
             Template template = Template.Parse(templateStr);
@@ -270,7 +270,7 @@ namespace Flipdish.Recruiting.WebhookReceiver
 
             return template.Render(paramaters); ;
         }
-        private string GetOrderItemsPartial()
+        private string GetOrderItemsPartialTemplate()
         {
             string templateStr = GetLiquidFileAsString("OrderItemsPartial.liquid");
             Template template = Template.Parse(templateStr);
@@ -316,7 +316,7 @@ namespace Flipdish.Recruiting.WebhookReceiver
             return $"{tableServiceCategoryMessage}: {_order.DropOffLocation}";
         }
 
-        private string GetCustomerDetailsPartial()
+        private string GetCustomerDetailsPartialTemplate()
         {
             string templateStr = GetLiquidFileAsString("CustomerDetailsPartial.liquid");
             Template template = Template.Parse(templateStr);
