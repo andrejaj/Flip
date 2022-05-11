@@ -349,7 +349,9 @@ namespace Flipdish.Recruiting.WebhookReceiver
         }
 
 
-        public Dictionary<string, Stream> _imagesWithNames = new Dictionary<string, Stream>();
+        private IDictionary<string, Stream> _imagesWithNames = new Dictionary<string, Stream>();
+
+        public IDictionary<string, Stream> ImagesWithNames => _imagesWithNames;
 
         private string GetItemsPart()
         {
