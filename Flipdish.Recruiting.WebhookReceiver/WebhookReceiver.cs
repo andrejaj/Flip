@@ -15,15 +15,14 @@ namespace Flipdish.Recruiting.WebhookReceiver
 {
     public static class WebhookReceiver
     {
-        public static IMailMessageBuilder MailMessageBuilder
-        {
-            get { return new MailMessageBuilder(); }
-        }
+        internal static IMailMessageBuilder MailMessageBuilder => new MailMessageBuilder();
 
-        public static IEmailRenderer GetEmailRenderer(Order order, string appNameId, string barcodeMetadataKey, string appDirectory, ILogger log, Currency currency)
+        internal static IEmailRenderer GetEmailRenderer(Order order, string appNameId, string barcodeMetadataKey, string appDirectory, ILogger log, Currency currency)
         {
             return new EmailRenderer(order, appNameId, barcodeMetadataKey, appDirectory, log, currency);
         }
+
+        internal static IEmailService EmailService => new EmailService();
 
         [FunctionName("WebhookReceiver")]
         public static async Task<IActionResult> Run(
