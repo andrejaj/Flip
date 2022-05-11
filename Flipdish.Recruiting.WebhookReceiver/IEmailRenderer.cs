@@ -2,7 +2,7 @@
 
 namespace Flipdish.Recruiting.WebhookReceiver
 {
-    internal interface IEmailRenderer : IDisposable
+    public interface IEmailRenderer : IDisposable
     {
         string RenderEmailOrder();
     }
