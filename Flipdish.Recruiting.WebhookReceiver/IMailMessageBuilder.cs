@@ -4,7 +4,7 @@ using System.Net.Mail;
 
 namespace Flipdish.Recruiting.WebhookReceiver
 {
-    public interface IMailMessageBuilder
+    internal interface IMailMessageBuilder
     {
         MailMessageBuilder Attachments(IDictionary<string, Stream> attachements);
         MailMessageBuilder Body(string body);

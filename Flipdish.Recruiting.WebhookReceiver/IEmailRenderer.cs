@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Flipdish.Recruiting.WebhookReceiver
 {
-    public interface IEmailRenderer : IDisposable
+    internal interface IEmailRenderer : IDisposable
     {
         public IDictionary<string, Stream> ImagesWithNames { get; }
         string RenderEmailOrder();

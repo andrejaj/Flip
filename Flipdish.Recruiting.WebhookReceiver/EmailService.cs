@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace Flipdish.Recruiting.WebhookReceiver
 {
-    internal class EmailService
+    internal class EmailService : IEmailService
     {
-        public static async Task Send(MailMessage mailMessage)
+        public async Task Send(MailMessage mailMessage)
         {
             using SmtpClient mailer = new SmtpClient
             {
