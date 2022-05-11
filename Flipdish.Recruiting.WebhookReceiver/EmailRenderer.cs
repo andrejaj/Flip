@@ -13,7 +13,7 @@ using NetBarcode;
 
 namespace Flipdish.Recruiting.WebhookReceiver
 {
-    internal class EmailRenderer : IDisposable
+    internal class EmailRenderer : IEmailRenderer
     {
         private readonly Order _order;
         private readonly string _appNameId;
@@ -36,8 +36,8 @@ namespace Flipdish.Recruiting.WebhookReceiver
         {
             string preorder_partial = _order.IsPreOrder == true ? GetPreorderPartial() : null;
             string order_status_partial = GetOrderStatusPartial();
-            string order_items_partial = GetOrderItemsPartial();
-            string customer_details_partial = GetCustomerDetailsPartial();
+            string order_items_partial = GetOrderItemsPartialTemplate();
+            string customer_details_partial = GetCustomerDetailsPartialTemplate();
 
             string templateStr = GetLiquidFileAsString("RestaurantOrderDetail.liquid");
             Template template = Template.Parse(templateStr);
@@ -270,7 +270,7 @@ namespace Flipdish.Recruiting.WebhookReceiver
 
             return template.Render(paramaters); ;
         }
-        private string GetOrderItemsPartial()
+        private string GetOrderItemsPartialTemplate()
         {
             string templateStr = GetLiquidFileAsString("OrderItemsPartial.liquid");
             Template template = Template.Parse(templateStr);
@@ -316,7 +316,7 @@ namespace Flipdish.Recruiting.WebhookReceiver
             return $"{tableServiceCategoryMessage}: {_order.DropOffLocation}";
         }
 
-        private string GetCustomerDetailsPartial()
+        private string GetCustomerDetailsPartialTemplate()
         {
             string templateStr = GetLiquidFileAsString("CustomerDetailsPartial.liquid");
             Template template = Template.Parse(templateStr);
@@ -349,7 +349,9 @@ namespace Flipdish.Recruiting.WebhookReceiver
         }
 
 
-        public Dictionary<string, Stream> _imagesWithNames = new Dictionary<string, Stream>();
+        private IDictionary<string, Stream> _imagesWithNames = new Dictionary<string, Stream>();
+
+        public IDictionary<string, Stream> ImagesWithNames => _imagesWithNames;
 
         private string GetItemsPart()
         {
