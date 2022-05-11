@@ -57,8 +57,8 @@ namespace Flipdish.Recruiting.WebhookReceiver
                 orderId = orderCreatedEvent.Order.OrderId;
                 if (!IsValidOrderEvent(orderCreatedEvent.Order.Store.Id, req.Query["storeId"].ToArray(), orderId))
                 {
-                    log.LogInformation($"Skipping order #{orderCreatedEvent.Order.OrderId}");
-                    return new ContentResult { Content = $"Skipping order #{orderCreatedEvent.Order.OrderId}", ContentType = "text/html" };
+                    log.LogInformation($"Skipping order #{orderId}");
+                    return new ContentResult { Content = $"Skipping order #{orderId}", ContentType = "text/html" };
                 }
 
                 var currency = GetDefaultCurrency(req.Query["currency"].FirstOrDefault());
