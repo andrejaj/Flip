@@ -7,7 +7,7 @@ using System.Text;
 namespace Flipdish.Recruiting.WebhookReceiver
 {
 
-    public class MailMessageBuilder
+    public class MailMessageBuilder : IMailMessageBuilder
     {
         private readonly MailMessage _mailMessage;
 

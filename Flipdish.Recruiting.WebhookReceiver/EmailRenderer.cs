@@ -13,7 +13,7 @@ using NetBarcode;
 
 namespace Flipdish.Recruiting.WebhookReceiver
 {
-    internal class EmailRenderer : IDisposable
+    internal class EmailRenderer : IEmailRenderer
     {
         private readonly Order _order;
         private readonly string _appNameId;
