@@ -15,6 +15,16 @@ namespace Flipdish.Recruiting.WebhookReceiver
 {
     public static class WebhookReceiver
     {
+        public static IMailMessageBuilder MailMessageBuilder
+        {
+            get { return new MailMessageBuilder(); }
+        }
+
+        public static IEmailRenderer GetEmailRenderer(Order order, string appNameId, string barcodeMetadataKey, string appDirectory, ILogger log, Currency currency)
+        {
+            return new EmailRenderer(order, appNameId, barcodeMetadataKey, appDirectory, log, currency);
+        }
+
         [FunctionName("WebhookReceiver")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
@@ -25,8 +35,6 @@ namespace Flipdish.Recruiting.WebhookReceiver
             try
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
-
-                OrderCreatedWebhook orderCreatedWebhook;
 
                 string test = req.Query["test"];
                 string content = string.Empty;
@@ -44,49 +52,27 @@ namespace Flipdish.Recruiting.WebhookReceiver
                 {
                     throw new Exception("No body found or test param.");
                 }
-                orderCreatedWebhook = JsonConvert.DeserializeObject<OrderCreatedWebhook>(content);
-                OrderCreatedEvent orderCreatedEvent = orderCreatedWebhook.Body;
-
+               
+                OrderCreatedEvent orderCreatedEvent = GetOrderCreatedEvent(content);
                 orderId = orderCreatedEvent.Order.OrderId;
-                List<int> storeIds = new List<int>();
-                string[] storeIdParams = req.Query["storeId"].ToArray();
-                if (storeIdParams.Length > 0)
+                if (!IsValidOrderEvent(orderCreatedEvent.Order.Store.Id, req.Query["storeId"].ToArray(), orderId))
                 {
-                    foreach (var storeIdString in storeIdParams)
-                    {
-                        int storeId = 0;
-                        int.TryParse(storeIdString, out storeId);                    
-                        storeIds.Add(storeId);
-                    }
-
-                    if (!storeIds.Contains(orderCreatedEvent.Order.Store.Id.Value))
-                    {
-                        log.LogInformation($"Skipping order #{orderId}");
-                        return new ContentResult { Content = $"Skipping order #{orderId}", ContentType = "text/html" };
-                    }
+                    log.LogInformation($"Skipping order #{orderCreatedEvent.Order.OrderId}");
+                    return new ContentResult { Content = $"Skipping order #{orderCreatedEvent.Order.OrderId}", ContentType = "text/html" };
                 }
 
-
-                Currency currency = Currency.EUR;
-                var currencyString = req.Query["currency"].FirstOrDefault();
-                if(!string.IsNullOrEmpty(currencyString) && Enum.TryParse(typeof(Currency), currencyString.ToUpper(), out object currencyObject))
-                {
-                    currency = (Currency)currencyObject;
-                }
-
+                var currency = GetDefaultCurrency(req.Query["currency"].FirstOrDefault());
                 var barcodeMetadataKey = req.Query["metadataKey"].First() ?? "eancode";
 
-                using EmailRenderer emailRenderer = new EmailRenderer(orderCreatedEvent.Order, orderCreatedEvent.AppId, barcodeMetadataKey, context.FunctionAppDirectory, log, currency);
-                
-                var emailOrder = emailRenderer.RenderEmailOrder();
+                var emailRenderer = GetEmailRenderer(orderCreatedEvent.Order, orderCreatedEvent.AppId, barcodeMetadataKey, context.FunctionAppDirectory, log, currency);
+                 var emailOrder = emailRenderer.RenderEmailOrder();
 
-                var mailMessageBuilder = new MailMessageBuilder();
-                var mailMessage = mailMessageBuilder
+                var mailMessage = MailMessageBuilder
                     .From("")
                     .To(req.Query["to"])
                     .Subject($"New Order #{orderId}")
                     .Body(emailOrder)
-                    .Attachments(emailRenderer._imagesWithNames)
+                    .Attachments(emailRenderer.ImagesWithNames)
                     .Build();
 
                 try
@@ -107,6 +93,47 @@ namespace Flipdish.Recruiting.WebhookReceiver
                 log.LogError(ex, $"Error occured during processing order #{orderId}");
                 throw ex;
             }
+        }
+
+        private static OrderCreatedEvent GetOrderCreatedEvent(string content)
+        {
+            OrderCreatedWebhook orderCreatedWebhook = JsonConvert.DeserializeObject<OrderCreatedWebhook>(content);
+            return orderCreatedWebhook.Body;
+        }
+
+        private static Currency GetDefaultCurrency(string currencyString)
+        {
+            Currency currency = Currency.EUR;
+            if (!string.IsNullOrEmpty(currencyString) && Enum.TryParse(typeof(Currency), currencyString.ToUpper(), out object currencyObject))
+            {
+                currency = (Currency)currencyObject;
+            }
+            return currency;
+        }
+
+        private static bool IsValidOrderEvent(int? StoreSummaryId, string[] storeIdsParams, int? OrderId = null)
+        {
+            if (OrderId is null)
+            {
+                throw new ArgumentNullException(nameof(OrderId));
+            }
+
+            List<int> storeIds = new List<int>();
+            string[] storeIdParams = storeIdsParams;
+            if (storeIdParams.Length > 0)
+            {
+                foreach (var storeIdString in storeIdParams)
+                {
+                    int.TryParse(storeIdString, out int storeId);
+                    storeIds.Add(storeId);
+                }
+
+                if (!storeIds.Contains(StoreSummaryId.Value))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
