@@ -41,3 +41,5 @@ Hi, i have refactored code, however i did not start adding uni testes.
 For this i can provide other projects.
 I can mentioned that I could use nsubtitute to mock the properties, methods that pass interface.
 I have spent around 9 hrs thinking and rewritting code.
+I have refactored WebHookReceiver, MailMessage, EmailService and EmailRenderer.
+To spend even more time I could refactor EmailRenderer.
